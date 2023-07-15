@@ -4,7 +4,7 @@ version:       0.5
 
 
 
-executable day1-iris
+executable iris
   main-is: day1/Iris.hs
   other-modules:
       Paths_ten_days_of_grad
