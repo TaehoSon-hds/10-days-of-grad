@@ -16,9 +16,7 @@ newW (nin, nout) = do
 
 -- Transformations
 loss :: (Container c e, Num e, Num (c e)) => c e -> c e -> e
-loss y tgt =
-  let diff = y - tgt
-  in sumElements $ cmap (^2) diff
+loss y tgt = sumElements $ cmap (^ (2::Int)) (y - tgt)
 
 sigmoid :: Matrix Double -> Matrix Double
 sigmoid = cmap f
@@ -30,29 +28,27 @@ sigmoid' :: Matrix Double -> Matrix Double -> Matrix Double
 sigmoid' x dY = dY * y * (ones - y)
    where
     y = sigmoid x
-    ones = (rows y) >< (cols y) $ repeat 1.0
+    ones = rows y >< cols y $ repeat 1.0
 
 linear' :: (Fractional t, Numeric t) => Matrix t -> Matrix t -> Matrix t
-linear' x dy = cmap (/ m) (tr' x LA.<> dy)
+linear' x dy = recip m `LA.scale` (tr' x LA.<> dy)
   where
     m = fromIntegral $ rows x
 
 loss' :: (Container c b, Num b, Num (c b)) => c b -> c b -> c b
-loss' y tgt =
-  let diff = y - tgt
-  in cmap (* 2) diff
+loss' y tgt = cmap (* 2) (y - tgt)
 
 -- Building NN
 forward :: Matrix Double -> Matrix Double -> [Matrix Double]
-forward x w1 =
-  let h = x LA.<> w1
-      y = sigmoid h
-  in [h, y]
+forward x w1 = [h, y]
+  where
+    h = x LA.<> w1
+    y = sigmoid h
 
 descend :: Num a => (a -> a) -> Int -> a -> a -> [a]
 descend gradF iterN gamma x0 = take iterN (iterate step x0)
   where
-    step x = x - gamma * gradF(x)
+    step x = x - gamma * gradF x
 
 grad :: (Matrix Double, Matrix Double) -> Matrix Double -> Matrix Double
 grad (x, y) w1 = dW1
