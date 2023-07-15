@@ -54,8 +54,8 @@ grad (x, y) w1 = dW1
     dW1 = linear' x dY
 
 main = do
-  dta <- loadMatrix "iris_x.dat"
-  tgt <- loadMatrix "iris_y.dat"
+  dta <- loadMatrix "day1/iris_x.dat"
+  tgt <- loadMatrix "day1/iris_y.dat"
 
   let (nin, nout) = (4, 3)
 
