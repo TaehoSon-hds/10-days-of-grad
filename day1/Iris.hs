@@ -1,9 +1,3 @@
--- 1. Install stack (command line interface is marked by $):
---   $ wget -qO- https://get.haskellstack.org/ | sh
--- (alternatively, curl -sSL https://get.haskellstack.org/ | sh)
--- 2. Install open-blas from https://www.openblas.net/ (needed for hmatrix package)
--- 3. Run
---   $ stack --resolver lts-10.6 --install-ghc runghc --package hmatrix-0.18.2.0 Iris.hs
 
 import Numeric.LinearAlgebra as LA
 
