@@ -23,3 +23,5 @@ cabal.project.local~
 .ghc.environment.*
 *.gz
 data
+.direnv
+result
