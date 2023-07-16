@@ -13,3 +13,19 @@ executable iris
       base
     , hmatrix
   default-language: Haskell2010
+
+
+executable nn
+  main-is: Main.hs
+  other-modules:
+      NeuralNetwork
+      Paths_ten_days_of_grad
+  hs-source-dirs:
+      day2
+  ghc-options: -Wall
+               -O2
+  build-depends:
+      base
+    , hmatrix
+    , hmatrix-morpheus
+  default-language: Haskell2010
