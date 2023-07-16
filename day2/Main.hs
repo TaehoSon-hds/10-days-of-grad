@@ -62,6 +62,7 @@ makeSpirals m noise = do
   let y = y1 === y2
   return (x, y)
 
+experiment1 :: IO ()
 experiment1 = do
   trainSet <- makeCircles 200 0.6 0.1
   testSet <- makeCircles 100 0.6 0.1
@@ -93,6 +94,7 @@ experiment1 = do
 
   putStrLn ""
 
+experiment2 :: IO ()
 experiment2 = do
   trainSet <- makeSpirals 200 0.5
   testSet <- makeSpirals 100 0.5
@@ -125,4 +127,5 @@ experiment2 = do
   putStrLn $ printf "Training accuracy %.1f" (net2' `accuracy` trainSet)
   putStrLn $ printf "Validation accuracy %.1f\n" (net2' `accuracy` testSet)
 
+main :: IO ()
 main = experiment1 >> experiment2
