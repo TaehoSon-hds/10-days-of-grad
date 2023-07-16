@@ -5,8 +5,7 @@
 
 
 module NeuralNetwork
-  ( NeuralNetwork (..)
-  , Layer (..)
+  ( Layer (..)
   , Activation (..)
   , genWeights
   , genNetwork
@@ -22,15 +21,10 @@ module NeuralNetwork
   , accuracy
   ) where
 
-import           Numeric.LinearAlgebra as LA
-import           Numeric.Morpheus.Activation ( relu
-                                             , reluGradient
-                                             , sigmoid
-                                             , sigmoidGradient
-                                             , tanh_
-                                             , tanhGradient
-                                             )
+import Numeric.LinearAlgebra as LA ( randn, rows, toColumns, sumElements, cols, matrix, cmap, (<>), Linear(scale), Transposable(tr'), Matrix )
+import Numeric.Morpheus.Activation ( relu , reluGradient , sigmoid , sigmoidGradient , tanh_ , tanhGradient)
 
+import Prelude hiding (pred)
 
 -- Activation function:
 -- * Rectified linear unit (ReLU)
@@ -57,7 +51,7 @@ getActivation Tanh = tanh_
 getActivation'
   :: Activation
   -> (Matrix Double -> Matrix Double -> Matrix Double)
-getActivation' Id = flip const
+getActivation' Id = \ _ x -> x
 getActivation' Sigmoid = \x dY -> sigmoidGradient x * dY
 getActivation' Relu = \x dY -> reluGradient x * dY
 getActivation' Tanh = \x dY -> tanhGradient x * dY
@@ -102,7 +96,7 @@ pass net (x, tgt) = (pred, grads)
 
 -- | Bias gradient
 bias' :: Matrix Double -> Matrix Double
-bias' dY = cmap (/ m) r
+bias' dY = recip m `scale` r
   where
     -- Sum elements in each row and return a new matrix
     r = matrix (cols dY) $ map sumElements (toColumns dY)
@@ -147,6 +141,7 @@ data AdamParameters = AdamParameters { _beta1 :: Double
                                      }
 
 -- | Adam optimizer parameters
+adamParams :: AdamParameters
 adamParams = AdamParameters { _beta1 = 0.9
                             , _beta2 = 0.999
                             , _epsilon = 1e-8
@@ -181,10 +176,10 @@ _adam
      -> ([Layer Double], [(Matrix Double, Matrix Double)], [(Matrix Double, Matrix Double)])
      -> (Matrix Double, Matrix Double)
      -> ([Layer Double], [(Matrix Double, Matrix Double)], [(Matrix Double, Matrix Double)])
-_adam p@AdamParameters { _lr = lr
-                       , _beta1 = beta1
-                       , _beta2 = beta2
-                       , _epsilon = epsilon
+_adam AdamParameters { _lr = lr
+                     , _beta1 = beta1
+                     , _beta2 = beta2
+                     , _epsilon = epsilon
       } iterN (w0, s0, v0) dataSet = last $ take iterN (iterate step (w0, s0, v0))
   where
     step (w, s, v) = (wN, sN, vN)
@@ -200,8 +195,8 @@ _adam p@AdamParameters { _lr = lr
           -> (Matrix Double, Matrix Double)
           -> Layer Double
         f (Layer w_ b_ sf) (vW, vB) (sW, sB) =
-           Layer (w_ - lr `scale` vW / ((sqrt sW) `addC` epsilon))
-                 (b_ - lr `scale` vB / ((sqrt sB) `addC` epsilon))
+           Layer (w_ - lr `scale` vW / (sqrt sW `addC` epsilon))
+                 (b_ - lr `scale` vB / (sqrt sB `addC` epsilon))
                  sf
 
         addC m c = cmap (+ c) m
@@ -210,8 +205,8 @@ _adam p@AdamParameters { _lr = lr
            -> Gradients Double
            -> (Matrix Double, Matrix Double)
         f2 (sW, sB) (Gradients dW dB) =
-          ( beta2 `scale` sW + (1 - beta2) `scale` (dW^2)
-          , beta2 `scale` sB + (1 - beta2) `scale` (dB^2))
+          ( beta2 `scale` sW + (1 - beta2) `scale` (dW ^ (2::Int))
+          , beta2 `scale` sB + (1 - beta2) `scale` (dB ^ (2::Int)))
 
         f3 :: (Matrix Double, Matrix Double)
            -> Gradients Double
