@@ -1,16 +1,4 @@
 -- | Circles dataset and gradient descent in a multilayer neural network
---
--- 1. Install stack (command line interface is marked by $):
---   $ wget -qO- https://get.haskellstack.org/ | sh
--- (alternatively, curl -sSL https://get.haskellstack.org/ | sh)
---
--- 2. Install open-blas from https://www.openblas.net/
--- (needed for hmatrix package)
---
--- 3. Compile and run
---
---   $ stack --resolver lts-10.6 --install-ghc ghc --package hmatrix-0.18.2.0 --package hmatrix-morpheus-0.1.1.2 -- -O2 Main.hs
---   $ ./Main
 
 import Numeric.LinearAlgebra ( randn, Linear(scale), Matrix, (><), fromBlocks, rand, (===) )
 import Text.Printf ( printf )
