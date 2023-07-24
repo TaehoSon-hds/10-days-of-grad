@@ -6,20 +6,16 @@
 
 ## How To Build
 
-1. Install stack:
+1. Build:
 
      ```
-     $ wget -qO- https://get.haskellstack.org/ | sh
+     $ nix build
      ```
 
-(alternatively, `curl -sSL https://get.haskellstack.org/ | sh`)
-
-2. Install open-blas from https://www.openblas.net/ (needed for hmatrix package)
-
-3. Compile and run
+2. Run
 
      ```
-     $ ./run.sh
+     $ ./result/bin/nn
      ```
 
 ```

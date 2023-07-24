@@ -1,28 +1,16 @@
 -- | Circles dataset and gradient descent in a multilayer neural network
---
--- 1. Install stack (command line interface is marked by $):
---   $ wget -qO- https://get.haskellstack.org/ | sh
--- (alternatively, curl -sSL https://get.haskellstack.org/ | sh)
---
--- 2. Install open-blas from https://www.openblas.net/
--- (needed for hmatrix package)
---
--- 3. Compile and run
---
---   $ stack --resolver lts-10.6 --install-ghc ghc --package hmatrix-0.18.2.0 --package hmatrix-morpheus-0.1.1.2 -- -O2 Main.hs
---   $ ./Main
 
-import           Numeric.LinearAlgebra
-import           Text.Printf ( printf )
+import Numeric.LinearAlgebra ( randn, Linear(scale), Matrix, (><), fromBlocks, rand, (===) )
+import Text.Printf ( printf )
 
-import           NeuralNetwork
+import NeuralNetwork ( accuracy, optimizeAdam, adamParams, optimize, genNetwork, genWeights, Layer(Layer), Activation(Id, Relu) )
 
 
 -- | Circles dataset
 makeCircles
   :: Int -> Double -> Double -> IO (Matrix Double, Matrix Double)
 makeCircles m factor noise = do
-  let rand' n = (scale (2 * pi)) <$> rand n 1
+  let rand' n = scale (2 * pi) <$> rand n 1
       m1 = m `div` 2
       m2 = m - (m `div` 2)
 
@@ -49,24 +37,23 @@ makeCircles m factor noise = do
 makeSpirals
   :: Int -> Double -> IO (Matrix Double, Matrix Double)
 makeSpirals m noise = do
-  r0 <- (scale (780 * 2*pi / 360). sqrt) <$> rand m 1
+  r0 <- scale (780 * 2*pi / 360). sqrt <$> rand m 1
   d1x0 <- scale noise <$> rand m 1
   d1y0 <- scale noise <$> rand m 1
 
-  let d1x = d1x0 - cos(r0) * r0
-  let d1y = d1y0 + sin(r0) * r0
+  let d1x = d1x0 - cos r0 * r0
+  let d1y = d1y0 + sin r0 * r0
 
-  let x = (fromBlocks [[d1x, d1y], [-d1x, -d1y]]) / 10.0
+  let x = fromBlocks [[d1x, d1y], [-d1x, -d1y]] / 10.0
   let y1 = m >< 1 $ repeat 0
   let y2 = m >< 1 $ repeat 1
   let y = y1 === y2
   return (x, y)
 
+experiment1 :: IO ()
 experiment1 = do
   trainSet <- makeCircles 200 0.6 0.1
   testSet <- makeCircles 100 0.6 0.1
-
-  let (dta, tgt) = trainSet
 
   (w1_rand, b1_rand) <- genWeights (2, 128)
   (w2_rand, b2_rand) <- genWeights (128, 1)
@@ -93,14 +80,14 @@ experiment1 = do
 
   putStrLn ""
 
+experiment2 :: IO ()
 experiment2 = do
   trainSet <- makeSpirals 200 0.5
   testSet <- makeSpirals 100 0.5
   -- saveMatrix "/tmp/spir.x" "%g" dta
   -- saveMatrix "/tmp/spir.y" "%g" tgt
 
-  let (dta, tgt) = trainSet
-      epochs = 700
+  let epochs = 700
 
   putStrLn $ printf "Spirals problem, Adam, %d epochs" epochs
   putStrLn "---"
@@ -125,4 +112,5 @@ experiment2 = do
   putStrLn $ printf "Training accuracy %.1f" (net2' `accuracy` trainSet)
   putStrLn $ printf "Validation accuracy %.1f\n" (net2' `accuracy` testSet)
 
+main :: IO ()
 main = experiment1 >> experiment2
